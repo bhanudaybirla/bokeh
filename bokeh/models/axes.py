@@ -108,9 +108,9 @@ class Axis(GuideRenderer):
     The %s of the major tick labels.
     """)
 
-    major_label_text_align = Override(default="center")
+    major_label_text_align = Override(default="left")
 
-    major_label_text_baseline = Override(default="alphabetic")
+    major_label_text_baseline = Override(default="middle")
 
     major_label_text_font_size = Override(default={'value': "8pt"})
 

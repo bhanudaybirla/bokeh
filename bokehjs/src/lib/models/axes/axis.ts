@@ -10,6 +10,7 @@ import {Side, TickLabelOrientation, SpatialUnits} from "core/enums"
 import {Text, Line} from "core/visuals"
 import {SidePanel, Orient} from "core/layout/side_panel"
 import {Context2d} from "core/util/canvas"
+import {get_text_height} from "core/util/text"
 import {sum} from "core/util/array"
 import {isString, isArray, isNumber} from "core/util/types"
 import {Factor, FactorRange} from "models/ranges/factor_range"
@@ -223,13 +224,41 @@ export class AxisView extends GuideRendererView {
     else
       angle = -orient
 
+    const font = visuals.text_font.value()
+    const {height} = get_text_height(font)
+    const line_height = visuals.text_line_height.value()*height
+
+    const yoffset = (function() {
+      const baseline = visuals.text_baseline.value()
+      switch (baseline) {
+        case "top":
+          return (_nlines: number) => 0
+        case "middle":
+          return (nlines: number)  => (-line_height*nlines/2) + (line_height/2)
+        case "bottom":
+          return (nlines: number)  => -line_height*nlines + line_height
+        default: {
+          console.warn(`'${baseline}' baseline not supported with multi line text, using 'top' instead`)
+          return (_nlines: number) => 0
+        }
+      }
+    })()
+
     for (let i = 0; i < sxs.length; i++) {
       const sx = Math.round(sxs[i] + nxd)
       const sy = Math.round(sys[i] + nyd)
 
       ctx.translate(sx, sy)
       ctx.rotate(angle)
-      ctx.fillText(labels[i], 0, 0)
+
+      const lines = labels[i].split("\n")
+      let y = yoffset(lines.length)
+
+      for (const line of lines) {
+        ctx.fillText(line, 0, y)
+        y += line_height
+      }
+
       ctx.rotate(-angle)
       ctx.translate(-sx, -sy)
     }
@@ -287,20 +316,24 @@ export class AxisView extends GuideRendererView {
     const c = Math.cos(angle)
     const s = Math.sin(angle)
 
+    const font = visuals.text_font.value()
+    const {height} = get_text_height(font)
+    const line_height = visuals.text_line_height.value()*height
+
     let extent = 0
 
-    for (let i = 0; i < labels.length; i++) {
-      const w = ctx.measureText(labels[i]).width * 1.1
-      const h = ctx.measureText(labels[i]).ascent * 0.9
+    for (const label of labels) {
+      const lines = label.split("\n")
+
+      const w = max(...lines.map((line) => ctx.measureText(line).width * 1.1))
+      const h = line_height*lines.length
 
       let val: number
-
       if (side == "above" || side == "below")
         val = w*s + (h/hscale)*c
       else
         val = w*c + (h/hscale)*s
 
-      // update extent if current value is larger
       if (val > extent)
         extent = val
     }
@@ -451,8 +484,8 @@ export class Axis extends GuideRenderer {
       minor_tick_line_color: 'black',
 
       major_label_text_font_size: "8pt",
-      major_label_text_align: "center",
-      major_label_text_baseline: "alphabetic",
+      major_label_text_align: "left",
+      major_label_text_baseline: "middle",
 
       axis_label_text_font_size: "10pt",
       axis_label_text_font_style: "italic",

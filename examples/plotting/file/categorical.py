@@ -10,9 +10,9 @@ dot = figure(title="Categorical Dot Plot", tools="", toolbar_location=None,
 dot.segment(0, factors, x, factors, line_width=2, line_color="green", )
 dot.circle(x, factors, size=15, fill_color="orange", line_color="green", line_width=3, )
 
-factors = ["foo 123", "bar:0.2", "baz-10"]
-x = ["foo 123", "foo 123", "foo 123", "bar:0.2", "bar:0.2", "bar:0.2", "baz-10",  "baz-10",  "baz-10"]
-y = ["foo 123", "bar:0.2", "baz-10",  "foo 123", "bar:0.2", "baz-10",  "foo 123", "bar:0.2", "baz-10"]
+factors = ["foo\n1234567\nXYZT", "bar:0.2", "baz-100000000"]
+x = ["foo\n1234567\nXYZT", "foo\n1234567\nXYZT", "foo\n1234567\nXYZT", "bar:0.2", "bar:0.2", "bar:0.2", "baz-100000000",  "baz-100000000",  "baz-100000000"]
+y = ["foo\n1234567\nXYZT", "bar:0.2", "baz-100000000",  "foo\n1234567\nXYZT", "bar:0.2", "baz-100000000",  "foo\n1234567\nXYZT", "bar:0.2", "baz-100000000"]
 colors = [
     "#0B486B", "#79BD9A", "#CFF09E",
     "#79BD9A", "#0B486B", "#79BD9A",
@@ -23,6 +23,10 @@ hm = figure(title="Categorical Heatmap", tools="hover", toolbar_location=None,
             x_range=factors, y_range=factors)
 
 hm.rect(x, y, color=colors, width=1, height=1)
+
+from bokeh.models import Axis
+#hm.xaxis.major_label_text_align = "center"
+#hm.xaxis.major_label_text_baseline = "middle"
 
 output_file("categorical.html", title="categorical.py example")
 
